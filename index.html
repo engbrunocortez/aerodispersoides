@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COTEL | Sistema de Pesquisa em Higiene Ocupacional</title>
+<style>
+:root{
+  --navy:#0b2239; --blue:#135f96; --cyan:#1aa1c8; --green:#1f8a70;
+  --bg:#f3f6f9; --card:#ffffff; --text:#1f2937; --muted:#667085;
+  --line:#d8e0e8; --danger:#c0392b; --warning:#b7791f; --ok:#147d64;
+  --soft:#edf6fb; --shadow:0 8px 28px rgba(11,34,57,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.topbar{
+  min-height:78px;background:linear-gradient(115deg,var(--navy),var(--blue));
+  color:#fff;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;
+  position:sticky;top:0;z-index:30;box-shadow:0 4px 14px rgba(0,0,0,.12)
+}
+.brand{display:flex;gap:13px;align-items:center}
+.logo{width:48px;height:48px;border-radius:13px;background:#fff;color:var(--navy);display:grid;place-items:center;font-weight:900;letter-spacing:-1px}
+.brand h1{font-size:18px;margin:0 0 3px}.brand small{opacity:.85}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid transparent;border-radius:9px;padding:9px 12px;font-weight:700}
+.btn-light{background:#fff;color:var(--navy)}
+.btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.35)}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-danger{background:#fff0ee;color:var(--danger);border-color:#f4c7c1}
+.btn-soft{background:#edf6fb;color:var(--blue);border-color:#cfe4f0}
+.layout{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 78px)}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:78px;height:calc(100vh - 78px);overflow:auto}
+.progress-wrap{padding:10px 8px 16px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.progress-meta{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:8px}
+.progress{height:10px;background:#e8edf2;border-radius:999px;overflow:hidden}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:.25s}
+.nav-item{
+  display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;text-align:left;
+  padding:10px 10px;border-radius:9px;color:#344054;margin:2px 0
+}
+.nav-item:hover{background:#f3f7fa}.nav-item.active{background:#e9f4fa;color:var(--blue);font-weight:800}
+.nav-index{width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#eef2f6;font-size:12px;font-weight:800;flex:0 0 auto}
+.nav-item.active .nav-index{background:var(--blue);color:#fff}
+.nav-dot{margin-left:auto;width:9px;height:9px;border-radius:50%;background:#d0d5dd}
+.nav-dot.done{background:var(--ok)}.nav-dot.warn{background:#e4a11b}
+.content{padding:24px;max-width:1200px;width:100%;margin:0 auto}
+.hero{background:linear-gradient(120deg,#fff,#eef7fb);border:1px solid #d5e7f0;border-radius:16px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
+.hero h2{margin:0 0 6px;color:var(--navy)}.hero p{margin:4px 0;color:var(--muted)}
+.section{display:none}.section.active{display:block}
+.section-title{margin:0 0 4px;color:var(--navy)}.section-subtitle{margin:0 0 18px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card h3{font-size:16px;margin:0 0 12px;color:var(--navy)}
+.q-label{font-weight:800;display:block;margin-bottom:7px}
+.help{font-size:12px;color:var(--muted);margin:5px 0 8px}
+input[type=text],input[type=number],input[type=date],input[type=url],select,textarea{
+  width:100%;border:1px solid #cbd5df;border-radius:9px;padding:10px 11px;background:#fff;color:var(--text)
+}
+textarea{min-height:105px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{outline:3px solid rgba(26,161,200,.12);border-color:var(--cyan)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.inline-options{display:flex;gap:14px;flex-wrap:wrap;padding:4px 0}
+.inline-options label{font-weight:500}
+.source-box{margin-top:10px;padding:11px;background:#f8fafc;border:1px dashed #b8c6d3;border-radius:10px}
+.source-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.source-head strong{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#475467}
+.source-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.tag{display:inline-flex;gap:6px;align-items:center;padding:5px 7px;background:#e9f4fa;color:#0f5a85;border-radius:999px;font-size:12px;font-weight:700}
+.tag button{border:0;background:transparent;color:inherit;padding:0;font-weight:900}
+.source-missing{border-color:#efb4aa;background:#fff7f6}
+.validation{font-size:12px;color:var(--danger);font-weight:700;margin-top:6px;display:none}
+.source-missing .validation{display:block}
+.notice{border-left:4px solid var(--cyan);background:#eff8fc;padding:12px 14px;border-radius:8px;margin-bottom:14px;color:#344054}
+.warning{border-left-color:#e4a11b;background:#fff8e8}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.kpi .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}.kpi b{font-size:23px;color:var(--navy);display:block}.kpi span{font-size:12px;color:var(--muted)}
+.footer-nav{display:flex;justify-content:space-between;margin-top:20px}
+.small{font-size:12px;color:var(--muted)}
+.hidden{display:none!important}
+.modal{display:none;position:fixed;inset:0;background:rgba(3,18,31,.62);z-index:100;padding:28px;overflow:auto}
+.modal.open{display:block}.modal-panel{max-width:920px;margin:auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+.modal-head h2{margin:0;color:var(--navy)}
+.close{border:0;background:#eef2f6;border-radius:8px;width:36px;height:36px;font-size:20px}
+.source-list-item{padding:10px;border:1px solid var(--line);border-radius:10px;margin:7px 0}
+.source-list-item strong{color:var(--navy)}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}th{background:#eef5f9;color:var(--navy)}
+.report{font-family:Arial,sans-serif;color:#111;line-height:1.5}
+.report .cover{text-align:center;min-height:80vh;display:flex;flex-direction:column;justify-content:center}
+.report h1{font-size:20px}.report h2{font-size:17px;margin-top:26px}.report h3{font-size:14px;margin:17px 0 6px}
+.report .r-source{font-size:9.5pt;color:#555;margin:3px 0 10px;padding-left:9px;border-left:2px solid #bbb}
+.report .r-empty{color:#999;font-style:italic}
+.report .ref{font-size:10pt;margin:7px 0}
+.report .pagebreak{page-break-before:always}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:0;height:auto;border-right:0;border-bottom:1px solid var(--line)}.grid-2,.grid-3,.kpi{grid-template-columns:1fr}.topbar{position:relative}.content{padding:14px}}
+@media print{
+  body{background:#fff}.topbar,.sidebar,.no-print,.modal-head{display:none!important}
+  .layout{display:block}.content{padding:0;max-width:none}.section{display:none!important}
+  #reportModal{display:block!important;position:static;background:#fff;padding:0}.modal-panel{box-shadow:none;max-width:none;padding:0}
+  #reportContent{display:block}.report .cover{min-height:95vh}
+}
+
+.evidence-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin:16px 0;box-shadow:var(--shadow)}
+.evidence-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.evidence-head h3{margin:0;color:var(--navy);font-size:16px}
+.evidence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.evidence-card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.evidence-card img{width:100%;height:150px;object-fit:contain;background:#f3f6f9;display:block}
+.evidence-card .meta{padding:10px}.evidence-card .caption{font-weight:800;font-size:13px;color:var(--navy);margin-bottom:5px}
+.evidence-card .src{font-size:11px;color:var(--muted);line-height:1.35}.evidence-card .actions{display:flex;gap:6px;margin-top:8px}
+.image-preview{width:100%;max-height:330px;object-fit:contain;background:#f3f6f9;border:1px solid var(--line);border-radius:10px;margin-top:10px}
+.report .r-figure{margin:18px auto 22px;text-align:center;max-width:760px;page-break-inside:avoid}
+.report .r-figure img{max-width:100%;max-height:480px;object-fit:contain;border:1px solid #ddd}
+.report .r-figcaption{font-size:10.5pt;margin-top:6px;font-weight:600}.report .r-figsource{font-size:9pt;color:#555;margin-top:2px}
+
+
+.manual-hero{background:linear-gradient(120deg,#0b2239,#135f96);color:#fff;border-radius:16px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.manual-hero h2{margin:0 0 6px}.manual-hero p{margin:0;opacity:.9}
+.manual-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.manual-step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.manual-step .num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--blue);color:#fff;font-weight:900;margin-bottom:10px}
+.manual-step h3{margin:0 0 7px;color:var(--navy);font-size:16px}.manual-step p{margin:0 0 10px;color:#475467;line-height:1.5}
+.manual-callout{border-radius:12px;padding:14px;margin:12px 0;border:1px solid var(--line)}
+.manual-callout.warn{background:#fff8e8;border-color:#f3d28b}.manual-callout.tip{background:#eef8f4;border-color:#b8dfd1}.manual-callout.info{background:#eef6fb;border-color:#cfe4f0}
+.manual-shortcuts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.manual-check{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px}.manual-check ul{margin:8px 0 0;padding-left:20px}.manual-check li{margin:6px 0}
+.nav-separator{height:1px;background:var(--line);margin:10px 5px}.nav-item.manual-nav{background:#f7fbfd;border:1px solid #d9ebf3}.nav-item.manual-nav.active{background:#dff1f8;color:var(--blue)}
+@media(max-width:900px){.manual-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">COTEL</div>
+    <div><h1>Sistema de Pesquisa em Higiene Ocupacional</h1><small>Segurança do Trabalho • Pesquisa Orientada • V2.1</small></div>
+  </div>
+  <div class="top-actions">
+    <button class="btn btn-ghost" onclick="openSources()">Fontes</button>
+    <button class="btn btn-ghost" onclick="exportProject()">Exportar projeto</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">Importar projeto</button>
+    <input id="importFile" type="file" accept=".json" hidden onchange="importProject(event)">
+    <button class="btn btn-light" onclick="generateReport()">Gerar relatório</button>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="progress-wrap">
+    <div class="progress-meta"><span>Progresso</span><span id="progressText">0%</span></div>
+    <div class="progress"><div id="progressBar"></div></div>
+    <div class="small" id="saveStatus" style="margin-top:8px">Salvamento automático ativo.</div>
+  </div>
+  <nav id="sidebarNav"></nav>
+</aside>
+
+<main class="content">
+  <div class="hero">
+    <h2 id="heroTitle">Pesquisa Orientada</h2>
+    <p id="heroTheme">Selecione o tema do grupo na identificação do trabalho.</p>
+    <p class="small">Toda informação técnico-científica inserida deve possuir fonte rastreável. O sistema sinaliza respostas sem fonte.</p>
+  </div>
+  <div id="kpis" class="kpi"></div>
+  <div id="sections"></div>
+</main>
+</div>
+
+<div class="modal" id="sourceModal">
+  <div class="modal-panel">
+    <div class="modal-head"><h2>Biblioteca de fontes</h2><button class="close" onclick="closeModal('sourceModal')">×</button></div>
+    <div class="grid-2">
+      <div><label class="q-label">Tipo de fonte</label>
+        <select id="srcType"><option>Norma / legislação</option><option>Documento técnico</option><option>Artigo científico</option><option>Livro</option><option>FDS / SDS</option><option>Site institucional</option><option>Outro</option></select>
+      </div>
+      <div><label class="q-label">Autor ou instituição</label><input id="srcAuthor" type="text" placeholder="Ex.: FUNDACENTRO"></div>
+    </div>
+    <div style="margin-top:10px"><label class="q-label">Título</label><input id="srcTitle" type="text" placeholder="Título da norma, artigo, livro ou página"></div>
+    <div class="grid-3" style="margin-top:10px">
+      <div><label class="q-label">Ano</label><input id="srcYear" type="text" placeholder="2026"></div>
+      <div><label class="q-label">Página / seção</label><input id="srcPage" type="text" placeholder="p. 12 / Anexo 11"></div>
+      <div><label class="q-label">Data de acesso</label><input id="srcAccess" type="date"></div>
+    </div>
+    <div style="margin-top:10px"><label class="q-label">URL ou DOI</label><input id="srcUrl" type="url" placeholder="https://... ou DOI"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary" onclick="addSource()">Adicionar fonte</button></div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+    <h3>Fontes cadastradas</h3>
+    <div id="sourceLibrary"></div>
+  </div>
+</div>
+
+
+<div class="modal" id="imageModal">
+  <div class="modal-panel" style="max-width:760px">
+    <div class="modal-head"><h2>Adicionar imagem / evidência</h2><button class="close" onclick="closeImageModal()">×</button></div>
+    <div class="notice">A imagem será vinculada à etapa atual e aparecerá automaticamente nessa seção do relatório. Legenda e fonte são obrigatórias.</div>
+    <div><label class="q-label">Arquivo de imagem</label><input id="imgFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="previewSelectedImage(event)"></div>
+    <img id="imgPreview" class="image-preview hidden" alt="Pré-visualização">
+    <div style="margin-top:12px"><label class="q-label">Legenda da figura</label><input id="imgCaption" type="text" placeholder="Ex.: Sistema de ventilação local exaustora do processo"></div>
+    <div class="grid-2" style="margin-top:12px">
+      <div><label class="q-label">Origem da imagem</label><select id="imgSourceMode" onchange="toggleImageSourceFields()"><option value="">Selecione...</option><option value="authors">Acervo dos autores</option><option value="registered">Fonte já cadastrada</option><option value="other">Outra fonte</option></select></div>
+      <div id="imgRegisteredWrap" class="hidden"><label class="q-label">Fonte cadastrada</label><select id="imgSourceRef"></select></div>
+    </div>
+    <div id="imgOtherWrap" class="hidden" style="margin-top:12px"><label class="q-label">Identificação da fonte da imagem</label><input id="imgSourceOther" type="text" placeholder="Autor/instituição, ano, URL ou outra identificação rastreável"></div>
+    <div class="small" style="margin-top:10px">Imagens grandes são redimensionadas automaticamente para preservar o desempenho e o arquivo do projeto.</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn btn-soft" onclick="closeImageModal()">Cancelar</button><button class="btn btn-primary" onclick="saveImageEvidence()">Adicionar imagem</button></div>
+  </div>
+</div>
+
+<div class="modal" id="reportModal">
+  <div class="modal-panel" style="max-width:1000px">
+    <div class="modal-head no-print">
+      <div><h2>Relatório final</h2><div class="small">Pré-visualização para impressão ou PDF.</div></div>
+      <div><button class="btn btn-primary" onclick="window.print()">Imprimir / Salvar PDF</button> <button class="close" onclick="closeModal('reportModal')">×</button></div>
+    </div>
+    <div id="reportContent"></div>
+  </div>
+</div>
+
+<script>
+const themes = [
+ {n:1,t:"Sílica cristalina respirável",s:"Corte, moagem ou preparação de materiais contendo quartzo.",c:"Poeira"},
+ {n:2,t:"Poeira de carvão",s:"Movimentação, britagem, moagem ou armazenamento de carvão.",c:"Poeira"},
+ {n:3,t:"Poeira de algodão",s:"Processamento de fibras em indústria têxtil.",c:"Poeira"},
+ {n:4,t:"Poeiras contendo chumbo",s:"Manipulação de pigmentos, reciclagem de baterias, lixamento ou remoção de revestimentos contendo chumbo.",c:"Poeira"},
+ {n:5,t:"Fumos de manganês em operações de soldagem",s:"Soldagem de materiais metálicos.",c:"Fumo metálico"},
+ {n:6,t:"Fumos gerados na soldagem de aço inoxidável",s:"Soldagem envolvendo metais como cromo e níquel.",c:"Fumo metálico"},
+ {n:7,t:"Fumos de óxido de zinco",s:"Soldagem ou aquecimento de superfícies galvanizadas.",c:"Fumo metálico"},
+ {n:8,t:"Aerossol de ácido sulfúrico",s:"Processos químicos, tratamento de superfícies, baterias ou operações capazes de gerar gotículas/aerossóis ácidos.",c:"Névoa/neblina a investigar"},
+ {n:9,t:"Névoa de óleo mineral ou fluido de corte",s:"Operações de usinagem e aplicação de fluidos de corte.",c:"Névoa"},
+ {n:10,t:"Névoa de tinta em aplicação por pulverização",s:"Pintura industrial por spray.",c:"Névoa; considerar possível presença simultânea de gases e vapores"}
+];
+
+const sections = [
+ {id:"ident",title:"Identificação do trabalho",subtitle:"Cadastre o grupo e selecione o cenário de pesquisa.",qs:[
+  {id:"school",label:"Instituição",type:"text",default:"COTEL – Colégio Técnico de Lorena",source:false},
+  {id:"discipline",label:"Disciplina",type:"text",default:"Segurança do Trabalho",source:false},
+  {id:"group",label:"Grupo / turma",type:"text",source:false},
+  {id:"members",label:"Integrantes",type:"textarea",help:"Informe um integrante por linha.",source:false},
+  {id:"theme",label:"Tema do grupo",type:"theme",source:false},
+  {id:"date",label:"Data",type:"date",source:false}
+ ]},
+ {id:"agent",title:"Conhecendo o aerodispersoide",subtitle:"Caracterize o agente e justifique tecnicamente sua classificação.",qs:[
+  {id:"what",label:"O que é esse agente?"},
+  {id:"composition",label:"Qual é sua composição química?"},
+  {id:"mixture",label:"É uma substância única ou uma mistura? Explique."},
+  {id:"processes",label:"Em quais processos industriais pode ser encontrado?"},
+  {id:"generation",label:"Como é gerado?"},
+  {id:"class",label:"Como é classificado: poeira, fumo, névoa ou neblina?"},
+  {id:"difference",label:"Qual é a diferença entre essa categoria e as demais?"},
+  {id:"mechanism",label:"Qual característica do processo justifica essa classificação?",help:"Não basta nomear a categoria; explique o mecanismo de formação."}
+ ]},
+ {id:"entry",title:"Entrada no organismo",subtitle:"Analise a via respiratória, as frações de partículas e os locais de deposição.",qs:[
+  {id:"resp",label:"Como ocorre a exposição por via respiratória?"},
+  {id:"fractions",label:"Explique fração inalável, torácica e respirável."},
+  {id:"importantFraction",label:"Qual fração é mais importante para o agente estudado? Justifique."},
+  {id:"deposit",label:"Onde essas partículas podem se depositar no sistema respiratório?"},
+  {id:"aeroSize",label:"Como o tamanho aerodinâmico interfere no risco?"},
+  {id:"smallToxic",label:"Partículas menores são necessariamente mais tóxicas? Justifique."},
+  {id:"otherRoutes",label:"Existem outras vias de entrada no organismo? Quais?"}
+ ]},
+ {id:"health",title:"Efeitos sobre a saúde",subtitle:"Explique como a exposição pode levar ao dano à saúde.",qs:[
+  {id:"acute",label:"Quais são os efeitos agudos?"},
+  {id:"chronic",label:"Quais são os efeitos crônicos?"},
+  {id:"organs",label:"Quais órgãos ou sistemas podem ser atingidos?"},
+  {id:"diseases",label:"Quais doenças ocupacionais podem estar associadas?"},
+  {id:"irritant",label:"Há efeitos irritantes? Explique."},
+  {id:"systemic",label:"Existem efeitos sistêmicos?"},
+  {id:"cancer",label:"Existe potencial carcinogênico? Como é classificado?"},
+  {id:"dose",label:"Explique a relação entre concentração, duração da exposição e risco à saúde."}
+ ]},
+ {id:"anticipation",title:"Antecipação do risco",subtitle:"Considere o processo ainda em fase de planejamento.",qs:[
+  {id:"preInfo",label:"Quais informações deveriam ser analisadas antes da implantação do processo?",help:"Considere matérias-primas, FDS, equipamentos, temperatura, operações, quantidade e características físico-químicas."},
+  {id:"signals",label:"Quais sinais permitiriam prever a geração e a exposição ao aerodispersoide?"}
+ ]},
+ {id:"recognition",title:"Reconhecimento da exposição",subtitle:"Caracterize fonte, trabalhadores, duração, processo e controles existentes.",qs:[
+  {id:"sourceGen",label:"Qual é a fonte geradora?"},
+  {id:"emission",label:"Em que ponto do processo ocorre a emissão?"},
+  {id:"workers",label:"Quem são os trabalhadores potencialmente expostos?"},
+  {id:"ges",label:"Existem Grupos de Exposição Similar (GES)? Caracterize-os."},
+  {id:"duration",label:"Qual é a duração típica da exposição?"},
+  {id:"pattern",label:"A exposição é contínua, intermitente ou eventual?"},
+  {id:"distance",label:"Como a distância da fonte interfere na exposição?"},
+  {id:"openClosed",label:"O processo é aberto, fechado ou parcialmente fechado?"},
+  {id:"ventilation",label:"Existe ventilação? Qual tipo e qual sua influência?"},
+  {id:"controlsNow",label:"Quais medidas de controle já existem?"},
+  {id:"deposits",label:"Há possibilidade de depósitos do material em superfícies? O que isso indica?"},
+  {id:"visibleCloud",label:"É possível observar uma nuvem de partículas?"},
+  {id:"invisible",label:"A ausência de partículas visíveis significa ausência de exposição? Explique."}
+ ]},
+ {id:"qualitative",title:"Avaliação qualitativa",subtitle:"Classifique o potencial de exposição e registre a justificativa.",qs:[
+  {id:"tox",label:"Toxicidade do agente",type:"select",options:["","Baixa","Moderada","Alta"]},
+  {id:"qty",label:"Quantidade utilizada / gerada",type:"select",options:["","Pequena","Média","Grande"]},
+  {id:"generationEase",label:"Facilidade de geração do aerossol",type:"select",options:["","Baixa","Moderada","Alta"]},
+  {id:"frequency",label:"Frequência da atividade",type:"select",options:["","Eventual","Frequente","Contínua"]},
+  {id:"qualDuration",label:"Duração da exposição",type:"select",options:["","Curta","Média","Longa"]},
+  {id:"proximity",label:"Proximidade entre trabalhador e fonte",type:"select",options:["","Distante","Intermediária","Próxima"]},
+  {id:"ventCond",label:"Condição da ventilação",type:"select",options:["","Boa","Parcial","Deficiente"]},
+  {id:"controlLevel",label:"Medidas de controle existentes",type:"select",options:["","Adequadas","Parciais","Inexistentes"]},
+  {id:"otherWorkers",label:"Possibilidade de contato de outros trabalhadores",type:"select",options:["","Baixa","Moderada","Alta"]},
+  {id:"qualClass",label:"Classificação final do potencial de exposição",type:"select",options:["","Baixo","Moderado","Elevado"]},
+  {id:"qualJust",label:"Justificativa técnica da classificação"}
+ ]},
+ {id:"quantitative",title:"Avaliação quantitativa",subtitle:"Defina a estratégia de medição e explique por que o método é adequado.",qs:[
+  {id:"needMeasure",label:"É necessário medir esse agente no ambiente de trabalho? Justifique."},
+  {id:"whatCollect",label:"O que deverá ser coletado?",help:"Ex.: particulado total, fração inalável, torácica, respirável ou elemento químico específico."},
+  {id:"sampling",label:"Amostragem pessoal, ambiental ou ambas?"},
+  {id:"pump",label:"Bomba de amostragem / sistema de coleta"},
+  {id:"device",label:"Dispositivo de coleta"},
+  {id:"filter",label:"Filtro"},
+  {id:"selector",label:"Seletor de partículas, quando aplicável"},
+  {id:"position",label:"Posição do amostrador"},
+  {id:"time",label:"Tempo de coleta"},
+  {id:"flow",label:"Vazão"},
+  {id:"method",label:"Método analítico"},
+  {id:"whyMethod",label:"Por que esse método é adequado para o agente pesquisado?"}
+ ]},
+ {id:"nho",title:"NHO 08 – Fundacentro",subtitle:"Verifique a aplicabilidade da NHO 08 ao agente estudado.",qs:[
+  {id:"nhoApplies",label:"A NHO 08 pode ser utilizada para investigar o agente? Explique."},
+  {id:"nhoFraction",label:"Qual fração deverá ser coletada?"},
+  {id:"nhoPrinciple",label:"Qual é o princípio geral do procedimento de amostragem?"},
+  {id:"otherMethod",label:"Se a NHO 08 não for suficiente, qual outro método técnico ou analítico seria necessário?"}
+ ]},
+ {id:"nr15",title:"NR-15",subtitle:"Pesquise a versão vigente e identifique se existe limite legal aplicável.",qs:[
+  {id:"nrExists",label:"A NR-15 estabelece limite de tolerância específico para esse agente?",type:"select",options:["","Sim","Não"]},
+  {id:"nrAnnex",label:"Anexo aplicável da NR-15"},
+  {id:"nrValue",label:"Valor do limite de tolerância"},
+  {id:"nrUnit",label:"Unidade"},
+  {id:"nrFraction",label:"Fração de partículas considerada"},
+  {id:"nrPeriod",label:"Período de exposição / referência"},
+  {id:"nrConclusion",label:"Conclusão sobre a referência legal brasileira",help:"Se não houver LT específico, registre isso claramente sem substituir automaticamente por limite internacional."}
+ ]},
+ {id:"acgih",title:"ACGIH",subtitle:"Registre os TLVs disponíveis e compare-os com a referência brasileira.",qs:[
+  {id:"twa",label:"TLV-TWA"},
+  {id:"stel",label:"TLV-STEL"},
+  {id:"ceiling",label:"Ceiling"},
+  {id:"acFraction",label:"Fração de partículas considerada"},
+  {id:"notations",label:"Notações especiais"},
+  {id:"carcClass",label:"Classificação relacionada à carcinogenicidade"},
+  {id:"compare",label:"NR-15 e ACGIH são iguais? Qual é mais restritiva?"},
+  {id:"legalTech",label:"Explique a diferença entre utilizar um limite legal brasileiro e um TLV da ACGIH como referência técnica de prevenção."}
+ ]},
+ {id:"interpretation",title:"Interpretação da avaliação",subtitle:"Crie um resultado hipotético e interprete seu significado.",qs:[
+  {id:"hypResult",label:"Resultado hipotético da medição",help:"Ex.: concentração média encontrada durante a jornada.",source:false},
+  {id:"hypUnit",label:"Unidade do resultado",type:"text",source:false},
+  {id:"nrCompareResult",label:"Comparação com a NR-15, quando houver limite aplicável."},
+  {id:"acCompareResult",label:"Comparação com o TLV da ACGIH."},
+  {id:"meaning",label:"O que o resultado significa para a saúde e segurança do trabalhador?"},
+  {id:"extraControls",label:"São necessárias medidas adicionais de controle? Justifique."}
+ ]},
+ {id:"control",title:"Controle da exposição",subtitle:"Proponha medidas seguindo a hierarquia de prevenção.",qs:[
+  {id:"elimination",label:"1. Eliminação — é possível eliminar a geração do agente? Proponha ou justifique."},
+  {id:"substitution",label:"2. Substituição — matéria-prima, produto, processo, forma física ou tecnologia podem ser substituídos?"},
+  {id:"engineering",label:"3. Medidas de engenharia — quais seriam mais adequadas?",help:"Considere enclausuramento, isolamento, automação, sistema fechado, umidificação, ventilação e captação na fonte."},
+  {id:"administrative",label:"4. Medidas administrativas e de organização do trabalho",help:"Considere tempo de exposição, acesso, procedimentos, sinalização, treinamento, manutenção, limpeza e monitoramento."},
+  {id:"epi",label:"5. EPI — qual papel teria no cenário, após análise das medidas anteriores?"}
+ ]},
+ {id:"respiratory",title:"Proteção respiratória",subtitle:"A seleção deve ser tecnicamente justificada e considerar as condições reais do cenário.",qs:[
+  {id:"respNeed",label:"O uso de respirador seria necessário? Justifique."},
+  {id:"contaminant",label:"Qual contaminante deve ser retido?",help:"Partículas, partículas oleosas, gases/vapores ou combinação."},
+  {id:"filterType",label:"Qual seria o tipo de filtro ou sistema respiratório necessário?"},
+  {id:"concentration",label:"Qual concentração ambiental deve ser considerada?"},
+  {id:"exposureLimit",label:"Qual limite de exposição será utilizado?"},
+  {id:"fpmr",label:"Qual fator de proteção mínimo requerido deve ser considerado?"},
+  {id:"task",label:"Quais características da tarefa influenciam a seleção?"},
+  {id:"worker",label:"Quais características do trabalhador precisam ser consideradas?"},
+  {id:"atmosphere",label:"Há partículas oleosas, deficiência de oxigênio ou possibilidade de condição IPVS?"},
+  {id:"fitTest",label:"Há necessidade de ensaio de vedação? Explique."},
+  {id:"respFinal",label:"Conclusão da seleção",help:"Complete: “Para o cenário analisado, nossa equipe selecionaria ________, porque ________.”"}
+ ]},
+ {id:"references",title:"Referências e conferência final",subtitle:"Revise a rastreabilidade e prepare o trabalho para entrega.",qs:[
+  {id:"finalNotes",label:"Observações finais do grupo",source:false},
+  {id:"responsibilities",label:"Divisão de responsabilidades entre os integrantes",help:"Registre quem ficou responsável por cada parte.",source:false}
+ ]}
+];
+
+let project = {version:"2.1", answers:{}, sources:[], images:[], themeIndex:"", updatedAt:null};
+
+function esc(s){return (s??"").toString().replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function uid(){return "F"+String(project.sources.length+1).padStart(2,"0")}
+function key(sid,qid){return sid+"."+qid}
+function getA(sid,qid){return project.answers[key(sid,qid)]||{value:"",sources:[]}}
+function setA(sid,qid,value){let k=key(sid,qid);project.answers[k]=project.answers[k]||{value:"",sources:[]};project.answers[k].value=value;save();refresh()}
+function setTheme(v){project.themeIndex=v;setA("ident","theme",v);updateHero()}
+function render(){
+ const nav=document.getElementById("sidebarNav"), root=document.getElementById("sections");
+ nav.innerHTML=""; root.innerHTML="";
+ const manualBtn=document.createElement("button");
+ manualBtn.className="nav-item manual-nav"; manualBtn.dataset.target="manual";
+ manualBtn.innerHTML=`<span class="nav-index">?</span><span>Manual do Sistema</span><span class="nav-dot done"></span>`;
+ manualBtn.onclick=()=>showSection("manual"); nav.appendChild(manualBtn);
+ const sep=document.createElement("div"); sep.className="nav-separator"; nav.appendChild(sep);
+ root.appendChild(renderManualSection());
+ sections.forEach((s,i)=>{
+   const b=document.createElement("button"); b.className="nav-item"+(i===0?" active":""); b.dataset.target=s.id;
+   b.innerHTML=`<span class="nav-index">${i+1}</span><span>${esc(s.title)}</span><span class="nav-dot" id="dot-${s.id}"></span>`;
+   b.onclick=()=>showSection(s.id); nav.appendChild(b);
+   const el=document.createElement("section"); el.className="section"+(i===0?" active":""); el.id="sec-"+s.id;
+   el.innerHTML=`<h2 class="section-title">${esc(s.title)}</h2><p class="section-subtitle">${esc(s.subtitle)}</p>`;
+   if(s.id==="references") el.innerHTML += `<div class="notice">A lista consolidada de referências será criada automaticamente no relatório a partir das fontes vinculadas às respostas.</div>`;
+   s.qs.forEach(q=>el.appendChild(renderQuestion(s,q)));
+   if(!["ident","references"].includes(s.id)) el.appendChild(renderEvidencePanel(s));
+   const foot=document.createElement("div"); foot.className="footer-nav";
+   foot.innerHTML=`<button class="btn btn-soft" ${i===0?"disabled":""} onclick="showSection('${sections[Math.max(0,i-1)].id}')">← Anterior</button>
+   <button class="btn btn-primary" ${i===sections.length-1?"disabled":""} onclick="showSection('${sections[Math.min(sections.length-1,i+1)].id}')">Próxima →</button>`;
+   el.appendChild(foot); root.appendChild(el);
+ });
+ refresh();
+}
+
+function renderManualSection(){
+ const el=document.createElement("section"); el.className="section"; el.id="sec-manual";
+ el.innerHTML=`
+ <div class="manual-hero"><h2>Manual do Sistema</h2><p>Passo a passo para preencher, documentar, salvar e gerar o relatório da Pesquisa Orientada.</p></div>
+ <div class="manual-callout info"><strong>Objetivo do sistema</strong><br>O sistema padroniza a pesquisa dos grupos e garante rastreabilidade. Sempre que uma informação técnico-científica for registrada, vincule a fonte consultada.</div>
+ <div class="manual-grid">
+ <div class="manual-step"><div class="num">1</div><h3>Identifique o trabalho</h3><p>Preencha a turma, os integrantes, a data e selecione o tema do grupo.</p><button class="btn btn-soft" onclick="showSection('ident')">Ir para Identificação</button></div>
+ <div class="manual-step"><div class="num">2</div><h3>Leia cada pergunta</h3><p>Responda somente depois de pesquisar. Evite respostas genéricas, listas sem explicação ou textos desconectados do agente.</p><button class="btn btn-soft" onclick="showSection('agent')">Começar a pesquisa</button></div>
+ <div class="manual-step"><div class="num">3</div><h3>Cadastre as fontes</h3><p>Registre normas, documentos técnicos, artigos científicos, livros, FDS e sites institucionais na Biblioteca de Fontes.</p><button class="btn btn-soft" onclick="openSources()">Abrir Biblioteca</button></div>
+ <div class="manual-step"><div class="num">4</div><h3>Vincule a fonte à resposta</h3><p>Após preencher uma informação técnica, clique em <strong>+ Vincular fonte</strong>. Uma fonte pode ser reutilizada em várias respostas.</p></div>
+ <div class="manual-step"><div class="num">5</div><h3>Insira imagens relevantes</h3><p>Use imagens para explicar processo, equipamento, amostragem, risco ou controle. Toda figura precisa de legenda e fonte.</p></div>
+ <div class="manual-step"><div class="num">6</div><h3>Observe os alertas</h3><p>Respostas preenchidas sem fonte ficam sinalizadas para que o grupo corrija a rastreabilidade.</p></div>
+ <div class="manual-step"><div class="num">7</div><h3>Acompanhe o progresso</h3><p>A barra lateral e os indicadores mostram o avanço, respostas rastreáveis, respostas sem fonte e imagens inseridas.</p></div>
+ <div class="manual-step"><div class="num">8</div><h3>Exporte uma cópia</h3><p>O sistema salva localmente, mas o grupo deve exportar periodicamente o projeto em <strong>.json</strong>.</p><button class="btn btn-soft" onclick="exportProject()">Exportar projeto</button></div>
+ <div class="manual-step"><div class="num">9</div><h3>Retome o trabalho</h3><p>Para continuar em outro navegador ou computador, importe o arquivo .json salvo anteriormente.</p><button class="btn btn-soft" onclick="document.getElementById('importFile').click()">Importar projeto</button></div>
+ <div class="manual-step"><div class="num">10</div><h3>Revise tudo</h3><p>Confira conteúdo, coerência, fontes, valores, imagens, legendas e identificação das referências.</p></div>
+ <div class="manual-step"><div class="num">11</div><h3>Gere o relatório</h3><p>O sistema organiza respostas, fontes vinculadas, figuras e referências consolidadas.</p><button class="btn btn-soft" onclick="generateReport()">Gerar relatório</button></div>
+ <div class="manual-step"><div class="num">12</div><h3>Salve em PDF</h3><p>Na pré-visualização do relatório, clique em <strong>Imprimir / Salvar PDF</strong> e escolha salvar como PDF.</p></div>
+ </div>
+ <div class="manual-callout warn"><strong>⚠ Atenção</strong><br>Não copie e cole informações sem verificar a fonte. Não invente valores de limites de exposição, métodos, equipamentos ou classificações.</div>
+ <div class="manual-callout tip"><strong>💡 Boas práticas</strong><br>Prefira normas, documentos oficiais, Fundacentro, órgãos públicos, artigos científicos, livros técnicos e instituições reconhecidas.</div>
+ <div class="manual-callout info"><strong>📚 Sobre as fontes</strong><br>A fonte vinculada aparece logo abaixo da informação no relatório. Ao final, o sistema cria uma lista consolidada das referências.</div>
+ <div class="manual-callout info"><strong>🖼 Sobre as imagens</strong><br>As imagens devem contribuir para compreender o agente, processo, exposição, avaliação ou controle — não apenas decorar o relatório.</div>
+ <div class="manual-check"><strong>Checklist antes da entrega</strong><ul><li>Integrantes identificados.</li><li>Tema correto selecionado.</li><li>Todas as etapas respondidas.</li><li>Informações técnicas com fontes vinculadas.</li><li>Valores de NR-15 e ACGIH conferidos.</li><li>Imagens com legenda e fonte.</li><li>Cópia do projeto exportada.</li><li>Relatório final revisado antes do PDF.</li></ul></div>
+ <div class="manual-shortcuts"><button class="btn btn-primary" onclick="showSection('ident')">Começar preenchimento</button><button class="btn btn-soft" onclick="openSources()">Biblioteca de Fontes</button><button class="btn btn-success" onclick="generateReport()">Visualizar relatório</button></div>`;
+ return el;
+}
+
+function renderQuestion(s,q){
+ const a=getA(s.id,q.id), card=document.createElement("div"); card.className="card"; card.dataset.qkey=key(s.id,q.id);
+ let control="";
+ if(q.type==="theme"){
+   control=`<select onchange="setTheme(this.value)"><option value="">Selecione...</option>${themes.map((t,i)=>`<option value="${i}" ${String(project.themeIndex)===String(i)?"selected":""}>Grupo ${t.n} – ${esc(t.t)}</option>`).join("")}</select><div class="help" id="themeHelp"></div>`;
+ } else if(q.type==="select"){
+   control=`<select onchange="setA('${s.id}','${q.id}',this.value)">${q.options.map(o=>`<option ${a.value===o?"selected":""}>${esc(o)}</option>`).join("")}</select>`;
+ } else if(q.type==="date"){
+   control=`<input type="date" value="${esc(a.value||q.default||"")}" onchange="setA('${s.id}','${q.id}',this.value)">`;
+ } else if(q.type==="text" || !q.type && ["nrValue","nrUnit","hypUnit"].includes(q.id)){
+   control=`<input type="text" value="${esc(a.value||q.default||"")}" oninput="setA('${s.id}','${q.id}',this.value)">`;
+ } else {
+   control=`<textarea oninput="setA('${s.id}','${q.id}',this.value)">${esc(a.value||q.default||"")}</textarea>`;
+ }
+ card.innerHTML=`<label class="q-label">${esc(q.label)}</label>${q.help?`<div class="help">${esc(q.help)}</div>`:""}${control}`;
+ if(q.source!==false){
+   const sb=document.createElement("div"); sb.className="source-box"; sb.dataset.sourcefor=key(s.id,q.id);
+   sb.innerHTML=`<div class="source-head"><strong>Fonte(s) desta informação</strong><button class="btn btn-soft" style="padding:5px 8px" onclick="pickSource('${s.id}','${q.id}')">+ Vincular fonte</button></div>
+   <div class="source-tags" id="tags-${s.id}-${q.id}"></div><div class="validation">Resposta preenchida sem fonte vinculada.</div>`;
+   card.appendChild(sb);
+ }
+ return card;
+}
+
+function renderEvidencePanel(section){
+ const box=document.createElement("div"); box.className="evidence-panel"; box.dataset.evidence=section.id;
+ box.innerHTML=`<div class="evidence-head"><div><h3>Imagens e evidências visuais</h3><div class="small">Insira apenas figuras relevantes à análise técnica.</div></div><button class="btn btn-soft" onclick="openImageModal('${section.id}')">+ Adicionar imagem</button></div><div class="evidence-grid" id="evidence-${section.id}"></div>`;
+ return box;
+}
+let pendingImageSection=null, pendingImageData=null;
+function openImageModal(sectionId){
+ pendingImageSection=sectionId; pendingImageData=null;
+ document.getElementById("imgFile").value=""; document.getElementById("imgCaption").value="";
+ document.getElementById("imgSourceMode").value=""; document.getElementById("imgSourceOther").value="";
+ document.getElementById("imgPreview").src=""; document.getElementById("imgPreview").classList.add("hidden");
+ const sel=document.getElementById("imgSourceRef");
+ sel.innerHTML='<option value="">Selecione...</option>'+project.sources.map(s=>`<option value="${esc(s.id)}">${esc(s.id)} · ${esc(s.author||s.title||"Fonte")}</option>`).join("");
+ toggleImageSourceFields(); document.getElementById("imageModal").classList.add("open");
+}
+function closeImageModal(){document.getElementById("imageModal").classList.remove("open");pendingImageSection=null;pendingImageData=null}
+function toggleImageSourceFields(){
+ const m=document.getElementById("imgSourceMode").value;
+ document.getElementById("imgRegisteredWrap").classList.toggle("hidden",m!=="registered");
+ document.getElementById("imgOtherWrap").classList.toggle("hidden",m!=="other");
+}
+function previewSelectedImage(ev){
+ const file=ev.target.files[0]; if(!file)return;
+ if(!/^image\/(png|jpeg|webp)$/.test(file.type)){alert("Utilize uma imagem PNG, JPG/JPEG ou WEBP.");ev.target.value="";return}
+ const reader=new FileReader();
+ reader.onload=e=>{const img=new Image();img.onload=()=>{const maxDim=1400,scale=Math.min(1,maxDim/Math.max(img.width,img.height));const canvas=document.createElement("canvas");canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);pendingImageData=canvas.toDataURL("image/jpeg",0.72);const prev=document.getElementById("imgPreview");prev.src=pendingImageData;prev.classList.remove("hidden")};img.src=e.target.result};
+ reader.readAsDataURL(file);
+}
+function imageSourceText(img){
+ if(img.sourceMode==="authors")return "Acervo dos autores";
+ if(img.sourceMode==="registered"){const src=project.sources.find(s=>s.id===img.sourceRef);return src?`${src.id} — ${sourceText(src)}`:"Fonte cadastrada não localizada"}
+ return img.sourceOther||"Fonte não informada";
+}
+function saveImageEvidence(){
+ if(!pendingImageSection){alert("Etapa da imagem não identificada.");return}
+ const caption=document.getElementById("imgCaption").value.trim(),mode=document.getElementById("imgSourceMode").value,ref=document.getElementById("imgSourceRef").value,other=document.getElementById("imgSourceOther").value.trim();
+ if(!pendingImageData){alert("Selecione uma imagem.");return} if(!caption){alert("Informe a legenda da figura.");return} if(!mode){alert("Informe a origem da imagem.");return} if(mode==="registered"&&!ref){alert("Selecione a fonte cadastrada.");return} if(mode==="other"&&!other){alert("Identifique a fonte da imagem.");return}
+ if(project.images.length>=10){alert("A V2 permite até 10 imagens por projeto para preservar o desempenho e o salvamento local.");return}
+ project.images.push({id:"IMG"+Date.now(),sectionId:pendingImageSection,data:pendingImageData,caption,sourceMode:mode,sourceRef:ref,sourceOther:other});save();refresh();closeImageModal();
+}
+function deleteImageEvidence(id){if(!confirm("Excluir esta imagem do projeto?"))return;project.images=project.images.filter(x=>x.id!==id);save();refresh()}
+function renderEvidence(){
+ sections.forEach(s=>{const el=document.getElementById("evidence-"+s.id);if(!el)return;const imgs=(project.images||[]).filter(x=>x.sectionId===s.id);if(!imgs.length){el.innerHTML='<div class="small">Nenhuma imagem adicionada nesta etapa.</div>';return}el.innerHTML=imgs.map((im,i)=>`<div class="evidence-card"><img src="${im.data}" alt="${esc(im.caption)}"><div class="meta"><div class="caption">Imagem ${i+1} — ${esc(im.caption)}</div><div class="src">Fonte: ${esc(imageSourceText(im))}</div><div class="actions"><button class="btn btn-danger" style="padding:5px 8px" onclick="deleteImageEvidence('${im.id}')">Excluir</button></div></div></div>`).join("")});
+}
+
+function showSection(id){
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+ document.getElementById("sec-"+id).classList.add("active");
+ document.querySelector(`.nav-item[data-target="${id}"]`).classList.add("active");
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function updateHero(){
+ const t=themes[Number(project.themeIndex)];
+ document.getElementById("heroTheme").textContent=t?`Grupo ${t.n} – ${t.t} | Situação: ${t.s} | Classificação inicial: ${t.c}`:"Selecione o tema do grupo na identificação do trabalho.";
+ const h=document.getElementById("themeHelp"); if(h)h.textContent=t?`Situação de referência: ${t.s} • Classificação inicial: ${t.c}`:"";
+}
+function save(){
+ project.updatedAt=new Date().toISOString();
+ try{localStorage.setItem("cotel_higiene_v2",JSON.stringify(project));}catch(e){const st=document.getElementById("saveStatus");if(st){st.textContent="Atenção: limite de armazenamento local atingido. Exporte o projeto para não perder alterações.";st.style.color="var(--danger)"}return;}
+ const s=document.getElementById("saveStatus"); if(s)s.textContent="Salvo automaticamente às "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+}
+function load(){
+ try{const x=localStorage.getItem("cotel_higiene_v2")||localStorage.getItem("cotel_higiene_v1");if(x)project=JSON.parse(x)}catch(e){}
+ project.version="2.1"; project.images=project.images||[];
+ // defaults
+ [["ident","school","COTEL – Colégio Técnico de Lorena"],["ident","discipline","Segurança do Trabalho"]].forEach(([s,q,v])=>{
+   if(!getA(s,q).value){project.answers[key(s,q)]={value:v,sources:[]}}
+ });
+ project.themeIndex=getA("ident","theme").value||project.themeIndex||"";
+}
+function refresh(){
+ updateHero(); renderSourceTags(); renderEvidence(); validateVisuals(); updateProgress(); updateKpis();
+}
+function renderSourceTags(){
+ sections.forEach(s=>s.qs.forEach(q=>{
+   if(q.source===false)return;
+   const a=getA(s.id,q.id), el=document.getElementById(`tags-${s.id}-${q.id}`); if(!el)return;
+   el.innerHTML=a.sources.map(id=>{
+     const src=project.sources.find(x=>x.id===id);
+     return src?`<span class="tag">${esc(src.id)} · ${esc(src.author||src.title||"Fonte")} <button title="Remover vínculo" onclick="unlinkSource('${s.id}','${q.id}','${id}')">×</button></span>`:"";
+   }).join("");
+ }));
+}
+function validateVisuals(){
+ sections.forEach(s=>s.qs.forEach(q=>{
+   if(q.source===false)return;
+   const a=getA(s.id,q.id), box=document.querySelector(`[data-sourcefor="${key(s.id,q.id)}"]`);
+   if(box) box.classList.toggle("source-missing",!!a.value.trim() && a.sources.length===0);
+ }));
+}
+function stats(){
+ let research=0, answered=0, sourcedAnswered=0;
+ sections.forEach(s=>s.qs.forEach(q=>{
+   if(s.id==="ident"||s.id==="references")return;
+   research++; const a=getA(s.id,q.id);
+   if(a.value.trim()){answered++; if(q.source===false||a.sources.length)sourcedAnswered++}
+ }));
+ return {research,answered,sourcedAnswered};
+}
+function updateProgress(){
+ const {research,answered,sourcedAnswered}=stats();
+ const pct=research?Math.round((sourcedAnswered/research)*100):0;
+ document.getElementById("progressBar").style.width=pct+"%";document.getElementById("progressText").textContent=pct+"%";
+ sections.forEach(s=>{
+   const relevant=s.qs.filter(q=>s.id==="ident" ? q.id==="theme"||q.id==="members" : true);
+   const done=relevant.filter(q=>{let a=getA(s.id,q.id);return a.value.trim() && (q.source===false||a.sources.length)}).length;
+   const dot=document.getElementById("dot-"+s.id); if(!dot)return;
+   dot.className="nav-dot "+(done===relevant.length&&relevant.length?"done":done?"warn":"");
+ });
+}
+function updateKpis(){
+ const st=stats(), missing=st.answered-st.sourcedAnswered;
+ document.getElementById("kpis").innerHTML=`
+ <div class="box"><b>${st.answered}</b><span>respostas preenchidas</span></div>
+ <div class="box"><b>${st.sourcedAnswered}</b><span>respostas rastreáveis</span></div>
+ <div class="box"><b>${missing}</b><span>respostas sem fonte</span></div>
+ <div class="box"><b>${project.sources.length}</b><span>fontes cadastradas</span></div><div class="box"><b>${(project.images||[]).length}</b><span>imagens/evidências</span></div>`;
+}
+let pendingLink=null;
+function openSources(){pendingLink=null;renderSourceLibrary();document.getElementById("sourceModal").classList.add("open")}
+function pickSource(sid,qid){pendingLink={sid,qid};renderSourceLibrary();document.getElementById("sourceModal").classList.add("open")}
+function closeModal(id){document.getElementById(id).classList.remove("open");if(id==="sourceModal")pendingLink=null}
+function addSource(){
+ const src={id:uid(),type:srcType.value,author:srcAuthor.value.trim(),title:srcTitle.value.trim(),year:srcYear.value.trim(),page:srcPage.value.trim(),url:srcUrl.value.trim(),access:srcAccess.value};
+ if(!src.author&&!src.title){alert("Informe ao menos o autor/instituição ou o título da fonte.");return}
+ project.sources.push(src);["srcAuthor","srcTitle","srcYear","srcPage","srcUrl","srcAccess"].forEach(id=>document.getElementById(id).value="");
+ save();renderSourceLibrary();refresh();
+}
+function renderSourceLibrary(){
+ const el=document.getElementById("sourceLibrary");
+ if(!project.sources.length){el.innerHTML='<div class="small">Nenhuma fonte cadastrada.</div>';return}
+ el.innerHTML=project.sources.map(s=>`<div class="source-list-item"><div><strong>${esc(s.id)} · ${esc(s.author||"Sem autor")}</strong></div>
+ <div>${esc(s.title||"Sem título")} ${s.year?`(${esc(s.year)})`:""}</div><div class="small">${esc(s.type)}${s.page?" • "+esc(s.page):""}${s.url?" • "+esc(s.url):""}</div>
+ <div style="margin-top:7px">${pendingLink?`<button class="btn btn-success" onclick="linkSource('${s.id}')">Vincular a esta resposta</button>`:""} <button class="btn btn-danger" onclick="deleteSource('${s.id}')">Excluir</button></div></div>`).join("");
+}
+function linkSource(id){
+ if(!pendingLink)return;const a=getA(pendingLink.sid,pendingLink.qid);if(!a.sources.includes(id))a.sources.push(id);project.answers[key(pendingLink.sid,pendingLink.qid)]=a;
+ save();refresh();closeModal("sourceModal");
+}
+function unlinkSource(sid,qid,id){const a=getA(sid,qid);a.sources=a.sources.filter(x=>x!==id);project.answers[key(sid,qid)]=a;save();refresh()}
+function deleteSource(id){
+ if(!confirm("Excluir esta fonte e remover todos os vínculos?"))return;
+ project.sources=project.sources.filter(s=>s.id!==id);
+ Object.values(project.answers).forEach(a=>a.sources=(a.sources||[]).filter(x=>x!==id));
+ save();renderSourceLibrary();refresh();
+}
+function sourceText(src){
+ if(!src)return"";let p=[];
+ if(src.author)p.push(src.author); if(src.title)p.push(src.title); if(src.year)p.push(src.year); if(src.page)p.push(src.page);
+ if(src.url)p.push(src.url); if(src.access)p.push("Acesso em: "+new Date(src.access+"T12:00:00").toLocaleDateString("pt-BR"));
+ return p.join(". ").replace(/\.\./g,".")+".";
+}
+function sourceHtml(ids){
+ if(!ids||!ids.length)return'<div class="r-source">Fonte não vinculada.</div>';
+ return ids.map(id=>`<div class="r-source"><strong>${esc(id)}</strong> — ${esc(sourceText(project.sources.find(s=>s.id===id)))}</div>`).join("");
+}
+function reportImages(sectionId,counter){const imgs=(project.images||[]).filter(x=>x.sectionId===sectionId);return imgs.map(im=>{counter.n++;return `<div class="r-figure"><img src="${im.data}" alt="${esc(im.caption)}"><div class="r-figcaption">Figura ${counter.n} – ${esc(im.caption)}</div><div class="r-figsource">Fonte: ${esc(imageSourceText(im))}.</div></div>`}).join("")}
+function reportAnswer(s,q){
+ const a=getA(s.id,q.id), val=a.value.trim();
+ if(!val)return `<h3>${esc(q.label)}</h3><div class="r-empty">Não preenchido.</div>`;
+ return `<h3>${esc(q.label)}</h3><div>${esc(val).replace(/\n/g,"<br>")}</div>${q.source===false?"":sourceHtml(a.sources)}`;
+}
+function generateReport(){
+ const st=stats(), missing=st.answered-st.sourcedAnswered;
+ if(missing>0 && !confirm(`Existem ${missing} resposta(s) preenchida(s) sem fonte. Deseja gerar o relatório mesmo assim?`))return;
+ const t=themes[Number(project.themeIndex)], members=getA("ident","members").value.trim(), group=getA("ident","group").value.trim(), date=getA("ident","date").value;
+ let body=`<div class="report"><div class="cover"><div><strong>COTEL – COLÉGIO TÉCNICO DE LORENA</strong></div>
+ <div style="margin-top:10px">Disciplina: Segurança do Trabalho</div>
+ <h1 style="margin-top:80px">PESQUISA ORIENTADA – AERODISPERSOIDES E CONTROLE DA EXPOSIÇÃO OCUPACIONAL</h1>
+ <h2>${t?esc(t.t):"Tema não selecionado"}</h2>
+ <p>${group?esc(group):""}</p><p>${members?esc(members).replace(/\n/g,"<br>"):"Integrantes não informados"}</p>
+ <p style="margin-top:70px">${date?new Date(date+"T12:00:00").toLocaleDateString("pt-BR"):""}</p></div><div class="pagebreak"></div>`;
+ const figCounter={n:0};
+ sections.filter(s=>!["ident","references"].includes(s.id)).forEach((s,i)=>{
+   body+=`<h2>${i+1}. ${esc(s.title)}</h2>`;
+   s.qs.forEach(q=>body+=reportAnswer(s,q));
+   body+=reportImages(s.id,figCounter);
+ });
+ body+=`<div class="pagebreak"></div><h2>Referências consolidadas</h2>`;
+ if(project.sources.length) project.sources.forEach(s=>body+=`<div class="ref"><strong>${esc(s.id)}</strong> — ${esc(sourceText(s))}</div>`);
+ else body+=`<div class="r-empty">Nenhuma fonte cadastrada.</div>`;
+ const notes=getA("references","finalNotes").value.trim(), resp=getA("references","responsibilities").value.trim();
+ if(notes)body+=`<h2>Observações finais</h2><div>${esc(notes).replace(/\n/g,"<br>")}</div>`;
+ if(resp)body+=`<h2>Divisão de responsabilidades</h2><div>${esc(resp).replace(/\n/g,"<br>")}</div>`;
+ body+=`</div>`;
+ document.getElementById("reportContent").innerHTML=body;document.getElementById("reportModal").classList.add("open");
+}
+function exportProject(){
+ const blob=new Blob([JSON.stringify(project,null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+ const t=themes[Number(project.themeIndex)];a.download="COTEL_Pesquisa_V2_1_"+(t?t.t.replace(/[^a-z0-9]+/gi,"_"):"Projeto")+".json";a.click();URL.revokeObjectURL(a.href);
+}
+function importProject(ev){
+ const f=ev.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{try{const p=JSON.parse(r.result);if(!p.answers||!p.sources)throw new Error();project=p;project.version="2.1";project.images=project.images||[];project.themeIndex=getA("ident","theme").value||project.themeIndex||"";save();render();alert("Projeto importado com sucesso.");}catch(e){alert("Arquivo de projeto inválido.");}};
+ r.readAsText(f);ev.target.value="";
+}
+load();render();save();
+</script>
+</body>
+</html>
